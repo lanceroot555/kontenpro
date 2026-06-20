@@ -65,10 +65,22 @@ function LoginForm() {
     setLoading(false);
     if (error) { setErr(error.message); return; }
     if (data.user) {
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
+      const [{ data: profile }, { data: roles }] = await Promise.all([
+        supabase.from("profiles").select("account_status").eq("user_id", data.user.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", data.user.id),
+      ]);
       const role = roles?.[0]?.role;
+      const status = profile?.account_status;
       toast.success("Berhasil masuk");
-      navigate({ to: role === "admin" ? "/admin/dashboard" : "/creator/new" });
+      if (status !== "approved") {
+        navigate({ to: "/pending" });
+      } else if (role === "superadmin") {
+        navigate({ to: "/superadmin/dashboard" });
+      } else if (role === "admin") {
+        navigate({ to: "/admin/dashboard" });
+      } else {
+        navigate({ to: "/creator/new" });
+      }
     }
   }
 
