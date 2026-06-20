@@ -10,7 +10,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
 import { AuthListener } from "@/lib/auth-listener";
 
@@ -32,9 +31,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -67,8 +63,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "KontenPro — Platform Manajemen Konten Tim" },
       { name: "twitter:description", content: "Satu Platform untuk Kreasi, Approval, Penjadwalan, dan Analitik Konten Sosial Media" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/761afb26-25e2-4be4-8598-618179a20f8f/id-preview-818a5b15--b051621a-0135-45ab-a3ee-f2cb640ecdfb.lovable.app-1781920208756.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/761afb26-25e2-4be4-8598-618179a20f8f/id-preview-818a5b15--b051621a-0135-45ab-a3ee-f2cb640ecdfb.lovable.app-1781920208756.png" },
+      { property: "og:image", content: "/og-image.png" },
+      { name: "twitter:image", content: "/og-image.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
