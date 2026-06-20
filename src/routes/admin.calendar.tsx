@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/use-auth";
 import { StatusBadge, PlatformBadge } from "@/components/swiss";
 import { formatDate } from "@/lib/kontenpro";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -24,16 +23,21 @@ const STATUS_COLOR: Record<string, string> = {
   draft: "#6B6B6B", submitted: "#F5A623", revision: "#E8741D", approved: "#00A651", published: "#0057B8",
 };
 
+const DAYS = ["Sen","Sel","Rab","Kam","Jum","Sab","Min"];
+
 function AdminCalendarPage() {
-  const auth = useAuth();
   const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+
   const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth()); // 0-11
+  const [month, setMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [openContent, setOpenContent] = useState<Content | null>(null);
 
-  const start = useMemo(() => new Date(year, month, 1), [year, month]);
-  const end = useMemo(() => new Date(year, month + 1, 0), [year, month]);
+  const m1 = useMemo(() => new Date(year, month, 1), [year, month]);
+  const m2 = useMemo(() => new Date(year, month + 1, 1), [year, month]);
+  const rangeStart = m1.toISOString().slice(0, 10);
+  const rangeEnd = new Date(year, month + 2, 0).toISOString().slice(0, 10);
 
   const { data: contents = [] } = useQuery({
     queryKey: ["admin-calendar", year, month],
@@ -41,14 +45,12 @@ function AdminCalendarPage() {
       const { data, error } = await supabase
         .from("contents")
         .select("id,title,brand_name,status,platforms,scheduled_date,caption,revision_comments,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(full_name),brands(name,color)")
-        .gte("scheduled_date", start.toISOString().slice(0,10))
-        .lte("scheduled_date", end.toISOString().slice(0,10));
+        .gte("scheduled_date", rangeStart)
+        .lte("scheduled_date", rangeEnd);
       if (error) throw error;
       return (data as unknown as Content[]) ?? [];
     },
   });
-
-  useEffect(() => { setSelectedDay(null); }, [year, month]);
 
   const byDay = useMemo(() => {
     const m: Record<string, Content[]> = {};
@@ -56,78 +58,43 @@ function AdminCalendarPage() {
     return m;
   }, [contents]);
 
-  const firstWeekday = (start.getDay() + 6) % 7; // Monday=0
-  const totalDays = end.getDate();
-  const cells: (number | null)[] = [
-    ...Array(firstWeekday).fill(null),
-    ...Array.from({ length: totalDays }, (_, i) => i + 1),
-  ];
-  while (cells.length % 7) cells.push(null);
-
-  const monthName = start.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
-  const years = Array.from({ length: 11 }, (_, i) => today.getFullYear() - 5 + i);
-
   function prev() { const d = new Date(year, month - 1, 1); setYear(d.getFullYear()); setMonth(d.getMonth()); }
   function next() { const d = new Date(year, month + 1, 1); setYear(d.getFullYear()); setMonth(d.getMonth()); }
+
+  const years = Array.from({ length: 11 }, (_, i) => today.getFullYear() - 5 + i);
+  const m1Label = m1.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+  const m2Label = m2.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
 
   return (
     <div>
       <div className="label-caps text-muted-foreground">Admin</div>
-      <div className="flex items-end justify-between mt-1">
+      <div className="flex items-end justify-between mt-1 flex-wrap gap-3">
         <h2 className="text-4xl font-bold tracking-tight">Kalender Global</h2>
         <div className="flex items-center gap-2">
           <button onClick={prev} className="border border-ink p-2 hover:bg-[#F5F5F0]"><ChevronLeft className="h-4 w-4" /></button>
-          <div className="px-4 py-2 border border-ink text-sm uppercase tracking-[0.06em] font-medium min-w-[180px] text-center">{monthName}</div>
+          <div className="px-3 py-2 border border-ink text-sm uppercase tracking-[0.06em] font-medium text-center min-w-[130px]">{m1Label}</div>
+          <span className="text-muted-foreground">→</span>
+          <div className="px-3 py-2 border border-ink/40 text-sm uppercase tracking-[0.06em] font-medium text-center min-w-[130px] text-muted-foreground">{m2Label}</div>
           <button onClick={next} className="border border-ink p-2 hover:bg-[#F5F5F0]"><ChevronRight className="h-4 w-4" /></button>
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="border border-ink p-2 bg-white text-sm cursor-pointer hover:bg-[#F5F5F0]">
+          <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="border border-ink p-2 bg-white text-sm cursor-pointer">
             {years.map((y) => <option key={y}>{y}</option>)}
           </select>
         </div>
       </div>
 
-      <div className="mt-6 bg-white border border-ink/15">
-        <div className="grid grid-cols-7 border-b border-ink/15">
-          {["Sen","Sel","Rab","Kam","Jum","Sab","Min"].map((d) => (
-            <div key={d} className="label-caps p-3 border-r border-ink/15 last:border-r-0 text-center">{d}</div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7">
-          {cells.map((day, i) => {
-            const dateStr = day ? `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}` : "";
-            const items = day ? byDay[dateStr] ?? [] : [];
-            const isToday = day && new Date().toISOString().slice(0,10) === dateStr;
-            return (
-              <button
-                key={i}
-                disabled={!day}
-                onClick={() => setSelectedDay(dateStr)}
-                className={`min-h-[120px] p-2 border-r border-b border-ink/10 last:border-r-0 text-left ${day ? "hover:bg-[#F5F5F0]" : "bg-[#fafaf6]"} ${selectedDay === dateStr ? "bg-[#F5F5F0]" : ""}`}
-              >
-                {day && (
-                  <>
-                    <div className={`text-sm font-medium ${isToday ? "bg-primary text-white w-6 h-6 flex items-center justify-center rounded-sm" : ""}`}>{day}</div>
-                    <div className="mt-1 flex flex-col gap-1">
-                      {items.slice(0, 4).map((c) => (
-                        <div key={c.id} className="flex items-center gap-1.5 overflow-hidden">
-                           <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: c.brands?.color || STATUS_COLOR[c.status] || '#000' }} />
-                           <span className="text-[10px] truncate uppercase" style={{ color: c.brands?.color || 'inherit' }} title={c.title}>{c.title}</span>
-                        </div>
-                      ))}
-                      {items.length > 4 && <span className="text-[10px] text-muted-foreground mt-1 text-center font-bold">+{items.length - 4} KONTEN</span>}
-                    </div>
-                  </>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      <div className="mt-5 grid md:grid-cols-2 gap-4">
+        <AdminMonthGrid year={year} month={month} byDay={byDay} todayStr={todayStr} selectedDay={selectedDay} onDayClick={setSelectedDay} />
+        <AdminMonthGrid year={m2.getFullYear()} month={m2.getMonth()} byDay={byDay} todayStr={todayStr} selectedDay={selectedDay} onDayClick={setSelectedDay} />
       </div>
 
-      {contents.length === 0 && (
-        <div className="mt-6 text-center text-muted-foreground py-12 border border-dashed border-ink/20">
-          Tidak ada jadwal konten untuk bulan ini.
-        </div>
-      )}
+      <div className="mt-3 flex flex-wrap gap-4 text-[11px] text-muted-foreground">
+        {Object.entries(STATUS_COLOR).map(([s, c]) => (
+          <span key={s} className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-sm inline-block" style={{ backgroundColor: c }} />
+            <span className="capitalize">{s}</span>
+          </span>
+        ))}
+      </div>
 
       {selectedDay && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center p-4" onClick={() => setSelectedDay(null)}>
@@ -137,20 +104,20 @@ function AdminCalendarPage() {
               <button onClick={() => setSelectedDay(null)} className="label-caps hover:text-primary">Tutup</button>
             </div>
             <div className="p-5 space-y-3">
-              {(byDay[selectedDay] ?? []).length === 0 && <div className="text-sm text-muted-foreground text-center py-4">Tidak ada jadwal konten di tanggal ini.</div>}
+              {(byDay[selectedDay] ?? []).length === 0 && (
+                <div className="text-sm text-muted-foreground text-center py-4">Tidak ada jadwal konten di tanggal ini.</div>
+              )}
               {(byDay[selectedDay] ?? []).map((c) => (
-                <button key={c.id} onClick={() => { setOpenContent(c); setSelectedDay(null); }} className="w-full text-left border border-ink/15 p-4 hover:bg-[#F5F5F0] transition-colors" style={c.brands ? { borderLeft: `6px solid ${c.brands.color}` } : {}}>
+                <button key={c.id} onClick={() => { setOpenContent(c); setSelectedDay(null); }} className="w-full text-left border border-ink/15 p-4 hover:bg-[#F5F5F0]" style={c.brands ? { borderLeft: `6px solid ${c.brands.color}` } : {}}>
                   <div className="flex justify-between items-start gap-2">
                     <div>
                       <div className="font-medium text-base">{c.title}</div>
                       <div className="text-xs text-muted-foreground mt-1">Oleh: {c.creator?.full_name || "Unknown"}</div>
-                      <div className="text-xs mt-1" style={{ color: c.brands?.color || 'inherit' }}>Brand: {c.brands?.name || c.brand_name || "Unknown"}</div>
+                      <div className="text-xs mt-0.5" style={{ color: c.brands?.color || "inherit" }}>Brand: {c.brands?.name || c.brand_name || "Unknown"}</div>
                     </div>
                     <StatusBadge status={c.status} />
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-1">
-                    {c.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}
-                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1">{c.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}</div>
                 </button>
               ))}
             </div>
@@ -171,47 +138,39 @@ function AdminCalendarPage() {
                 <div className="text-sm text-muted-foreground mt-1">
                   Creator: {openContent.creator?.full_name || "Unknown"}
                   <span className="mx-2">•</span>
-                  Brand: <span className="font-semibold" style={{ color: openContent.brands?.color || 'inherit' }}>{openContent.brands?.name || openContent.brand_name || "Unknown"}</span>
+                  Brand: <span className="font-semibold" style={{ color: openContent.brands?.color || "inherit" }}>{openContent.brands?.name || openContent.brand_name || "Unknown"}</span>
                 </div>
               </div>
-              
               <div className="flex gap-1 flex-wrap">{openContent.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}</div>
-              
               <div className="grid grid-cols-2 gap-4 border border-ink/10 p-4 bg-[#F5F5F0]">
                 <div>
                   <div className="label-caps text-muted-foreground">Tayang</div>
                   <div className="font-medium mt-1">{formatDate(openContent.scheduled_date)}</div>
                 </div>
                 {openContent.status === "published" && (
-                   <div>
-                     <div className="label-caps text-muted-foreground">Link Post</div>
-                     <div className="mt-1 flex flex-col gap-1">
-                       {openContent.platforms.map((p, i) => {
-                          const url = openContent.platform_metrics?.[p]?.url || (i === 0 ? openContent.post_url : null);
-                          return url ? <a key={p} href={url} target="_blank" rel="noreferrer" className="underline hover:text-primary text-xs font-bold uppercase">{p}</a> : null;
-                       })}
-                       {!openContent.platforms.length && openContent.post_url && <a href={openContent.post_url} target="_blank" rel="noreferrer" className="underline hover:text-primary text-xs font-bold uppercase">Buka</a>}
-                     </div>
-                   </div>
+                  <div>
+                    <div className="label-caps text-muted-foreground">Link Post</div>
+                    <div className="mt-1 flex flex-col gap-1">
+                      {openContent.platforms.map((p, i) => {
+                        const url = openContent.platform_metrics?.[p]?.url || (i === 0 ? openContent.post_url : null);
+                        return url ? <a key={p} href={url} target="_blank" rel="noreferrer" className="underline hover:text-primary text-xs font-bold uppercase">{p}</a> : null;
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
-
               {openContent.file_url && (
                 <div>
-                   <div className="label-caps text-muted-foreground mb-2">Media / Visual</div>
-                   <div className="border border-ink/10 p-1">
-                     <FilePreview path={openContent.file_url} />
-                   </div>
+                  <div className="label-caps text-muted-foreground mb-2">Media / Visual</div>
+                  <div className="border border-ink/10 p-1"><FilePreview path={openContent.file_url} /></div>
                 </div>
               )}
-
               {openContent.caption && (
                 <div>
                   <div className="label-caps text-muted-foreground mb-1">Caption</div>
                   <p className="text-[15px] whitespace-pre-wrap leading-relaxed">{openContent.caption}</p>
                 </div>
               )}
-
               {openContent.status === "revision" && openContent.revision_comments && (
                 <div className="border-l-4 border-primary bg-primary/5 p-4">
                   <div className="label-caps text-primary">Komentar Admin</div>
@@ -222,6 +181,81 @@ function AdminCalendarPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function AdminMonthGrid({
+  year, month, byDay, todayStr, selectedDay, onDayClick,
+}: {
+  year: number; month: number;
+  byDay: Record<string, Content[]>;
+  todayStr: string; selectedDay: string | null;
+  onDayClick: (dateStr: string) => void;
+}) {
+  const start = new Date(year, month, 1);
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const firstWeekday = (start.getDay() + 6) % 7;
+  const cells: (number | null)[] = [
+    ...Array(firstWeekday).fill(null),
+    ...Array.from({ length: totalDays }, (_, i) => i + 1),
+  ];
+  while (cells.length % 7) cells.push(null);
+
+  const monthLabel = start.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+
+  return (
+    <div className="bg-white border border-ink/15 overflow-hidden">
+      <div className="px-3 py-2 bg-ink text-white text-center text-[11px] uppercase tracking-[0.08em] font-medium">{monthLabel}</div>
+      <div className="grid grid-cols-7 border-b border-ink/10">
+        {DAYS.map((d) => (
+          <div key={d} className="text-[10px] font-medium text-muted-foreground text-center py-1.5 border-r border-ink/8 last:border-r-0">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7">
+        {cells.map((day, i) => {
+          const dateStr = day
+            ? `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+            : "";
+          const items = day ? byDay[dateStr] ?? [] : [];
+          const isToday = dateStr === todayStr;
+          const isSelected = dateStr === selectedDay;
+
+          return (
+            <button
+              key={i}
+              disabled={!day}
+              onClick={() => day && onDayClick(dateStr)}
+              title={items.length > 0 ? `${items.length} konten` : undefined}
+              className={[
+                "min-h-[68px] p-1.5 border-r border-b border-ink/8 last:border-r-0 text-left transition-colors",
+                !day ? "bg-[#fafaf8] cursor-default" : "hover:bg-[#F5F5F0] cursor-pointer",
+                isSelected ? "bg-[#eeeee8] ring-1 ring-inset ring-ink/20" : "",
+              ].join(" ")}
+            >
+              {day && (
+                <>
+                  <div className={[
+                    "text-[11px] font-semibold w-5 h-5 flex items-center justify-center",
+                    isToday ? "bg-primary text-white rounded-sm" : "text-ink",
+                  ].join(" ")}>{day}</div>
+                  <div className="mt-0.5 flex flex-col gap-0.5">
+                    {items.slice(0, 3).map((c) => (
+                      <div key={c.id} className="flex items-center gap-1 overflow-hidden">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-sm" style={{ backgroundColor: c.brands?.color || STATUS_COLOR[c.status] }} />
+                        <span className="text-[9px] truncate leading-tight" style={{ color: c.brands?.color || "inherit" }}>{c.title}</span>
+                      </div>
+                    ))}
+                    {items.length > 3 && (
+                      <span className="text-[9px] text-muted-foreground font-bold">+{items.length - 3} lagi</span>
+                    )}
+                  </div>
+                </>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
