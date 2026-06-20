@@ -165,9 +165,9 @@ function NewContent() {
         <Field label="Tipe Konten">
           <div className="flex gap-0 border border-ink/40">
             {([
-              { value: "viral", label: "🔥 Viral", desc: "Konten trending & hiburan" },
-              { value: "related", label: "🎯 Related", desc: "Relevan dengan brand" },
-              { value: "evergreen", label: "🌿 Evergreen", desc: "Selalu relevan sepanjang waktu" },
+              { value: "viral", label: "Viral", desc: "Konten trending & hiburan" },
+              { value: "related", label: "Related", desc: "Cocok dibahas pada saat ini" },
+              { value: "evergreen", label: "Evergreen", desc: "Selalu relevan sepanjang waktu" },
             ] as const).map((t) => (
               <button
                 key={t.value}

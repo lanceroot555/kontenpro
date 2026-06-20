@@ -13,9 +13,9 @@ export const Route = createFileRoute("/admin/contents")({
 type ContentType = "viral" | "related" | "evergreen";
 
 const CONTENT_TYPE_CONFIG: Record<ContentType, { label: string; color: string }> = {
-  viral:     { label: "🔥 Viral",    color: "bg-orange-100 text-orange-700 border-orange-200" },
-  related:   { label: "🎯 Related",  color: "bg-blue-100 text-blue-700 border-blue-200" },
-  evergreen: { label: "🌿 Evergreen",color: "bg-green-100 text-green-700 border-green-200" },
+  viral:     { label: "Viral",    color: "bg-orange-100 text-orange-700 border-orange-200" },
+  related:   { label: "Related",  color: "bg-blue-100 text-blue-700 border-blue-200" },
+  evergreen: { label: "Evergreen",color: "bg-green-100 text-green-700 border-green-200" },
 };
 
 type Row = {
