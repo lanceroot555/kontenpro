@@ -20,12 +20,15 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CreatorIndexRouteImport } from './routes/creator.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as SuperadminSettingsRouteImport } from './routes/superadmin.settings'
 import { Route as SuperadminDashboardRouteImport } from './routes/superadmin.dashboard'
 import { Route as CreatorStatusRouteImport } from './routes/creator.status'
+import { Route as CreatorSettingsRouteImport } from './routes/creator.settings'
 import { Route as CreatorNotificationsRouteImport } from './routes/creator.notifications'
 import { Route as CreatorNewRouteImport } from './routes/creator.new'
 import { Route as CreatorMetricsRouteImport } from './routes/creator.metrics'
 import { Route as CreatorCalendarRouteImport } from './routes/creator.calendar'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminContentsRouteImport } from './routes/admin.contents'
@@ -88,6 +91,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const SuperadminSettingsRoute = SuperadminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => SuperadminRoute,
+} as any)
 const SuperadminDashboardRoute = SuperadminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -96,6 +104,11 @@ const SuperadminDashboardRoute = SuperadminDashboardRouteImport.update({
 const CreatorStatusRoute = CreatorStatusRouteImport.update({
   id: '/status',
   path: '/status',
+  getParentRoute: () => CreatorRoute,
+} as any)
+const CreatorSettingsRoute = CreatorSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => CreatorRoute,
 } as any)
 const CreatorNotificationsRoute = CreatorNotificationsRouteImport.update({
@@ -117,6 +130,11 @@ const CreatorCalendarRoute = CreatorCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
   getParentRoute: () => CreatorRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
   id: '/notifications',
@@ -165,12 +183,15 @@ export interface FileRoutesByFullPath {
   '/admin/contents': typeof AdminContentsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/creator/calendar': typeof CreatorCalendarRoute
   '/creator/metrics': typeof CreatorMetricsRoute
   '/creator/new': typeof CreatorNewRoute
   '/creator/notifications': typeof CreatorNotificationsRoute
+  '/creator/settings': typeof CreatorSettingsRoute
   '/creator/status': typeof CreatorStatusRoute
   '/superadmin/dashboard': typeof SuperadminDashboardRoute
+  '/superadmin/settings': typeof SuperadminSettingsRoute
   '/admin/': typeof AdminIndexRoute
   '/creator/': typeof CreatorIndexRoute
 }
@@ -188,12 +209,15 @@ export interface FileRoutesByTo {
   '/admin/contents': typeof AdminContentsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/creator/calendar': typeof CreatorCalendarRoute
   '/creator/metrics': typeof CreatorMetricsRoute
   '/creator/new': typeof CreatorNewRoute
   '/creator/notifications': typeof CreatorNotificationsRoute
+  '/creator/settings': typeof CreatorSettingsRoute
   '/creator/status': typeof CreatorStatusRoute
   '/superadmin/dashboard': typeof SuperadminDashboardRoute
+  '/superadmin/settings': typeof SuperadminSettingsRoute
   '/admin': typeof AdminIndexRoute
   '/creator': typeof CreatorIndexRoute
 }
@@ -214,12 +238,15 @@ export interface FileRoutesById {
   '/admin/contents': typeof AdminContentsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/creator/calendar': typeof CreatorCalendarRoute
   '/creator/metrics': typeof CreatorMetricsRoute
   '/creator/new': typeof CreatorNewRoute
   '/creator/notifications': typeof CreatorNotificationsRoute
+  '/creator/settings': typeof CreatorSettingsRoute
   '/creator/status': typeof CreatorStatusRoute
   '/superadmin/dashboard': typeof SuperadminDashboardRoute
+  '/superadmin/settings': typeof SuperadminSettingsRoute
   '/admin/': typeof AdminIndexRoute
   '/creator/': typeof CreatorIndexRoute
 }
@@ -241,12 +268,15 @@ export interface FileRouteTypes {
     | '/admin/contents'
     | '/admin/dashboard'
     | '/admin/notifications'
+    | '/admin/settings'
     | '/creator/calendar'
     | '/creator/metrics'
     | '/creator/new'
     | '/creator/notifications'
+    | '/creator/settings'
     | '/creator/status'
     | '/superadmin/dashboard'
+    | '/superadmin/settings'
     | '/admin/'
     | '/creator/'
   fileRoutesByTo: FileRoutesByTo
@@ -264,12 +294,15 @@ export interface FileRouteTypes {
     | '/admin/contents'
     | '/admin/dashboard'
     | '/admin/notifications'
+    | '/admin/settings'
     | '/creator/calendar'
     | '/creator/metrics'
     | '/creator/new'
     | '/creator/notifications'
+    | '/creator/settings'
     | '/creator/status'
     | '/superadmin/dashboard'
+    | '/superadmin/settings'
     | '/admin'
     | '/creator'
   id:
@@ -289,12 +322,15 @@ export interface FileRouteTypes {
     | '/admin/contents'
     | '/admin/dashboard'
     | '/admin/notifications'
+    | '/admin/settings'
     | '/creator/calendar'
     | '/creator/metrics'
     | '/creator/new'
     | '/creator/notifications'
+    | '/creator/settings'
     | '/creator/status'
     | '/superadmin/dashboard'
+    | '/superadmin/settings'
     | '/admin/'
     | '/creator/'
   fileRoutesById: FileRoutesById
@@ -390,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/superadmin/settings': {
+      id: '/superadmin/settings'
+      path: '/settings'
+      fullPath: '/superadmin/settings'
+      preLoaderRoute: typeof SuperadminSettingsRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
     '/superadmin/dashboard': {
       id: '/superadmin/dashboard'
       path: '/dashboard'
@@ -402,6 +445,13 @@ declare module '@tanstack/react-router' {
       path: '/status'
       fullPath: '/creator/status'
       preLoaderRoute: typeof CreatorStatusRouteImport
+      parentRoute: typeof CreatorRoute
+    }
+    '/creator/settings': {
+      id: '/creator/settings'
+      path: '/settings'
+      fullPath: '/creator/settings'
+      preLoaderRoute: typeof CreatorSettingsRouteImport
       parentRoute: typeof CreatorRoute
     }
     '/creator/notifications': {
@@ -431,6 +481,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/creator/calendar'
       preLoaderRoute: typeof CreatorCalendarRouteImport
       parentRoute: typeof CreatorRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/notifications': {
       id: '/admin/notifications'
@@ -484,6 +541,7 @@ interface AdminRouteChildren {
   AdminContentsRoute: typeof AdminContentsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -494,6 +552,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminContentsRoute: AdminContentsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -504,6 +563,7 @@ interface CreatorRouteChildren {
   CreatorMetricsRoute: typeof CreatorMetricsRoute
   CreatorNewRoute: typeof CreatorNewRoute
   CreatorNotificationsRoute: typeof CreatorNotificationsRoute
+  CreatorSettingsRoute: typeof CreatorSettingsRoute
   CreatorStatusRoute: typeof CreatorStatusRoute
   CreatorIndexRoute: typeof CreatorIndexRoute
 }
@@ -513,6 +573,7 @@ const CreatorRouteChildren: CreatorRouteChildren = {
   CreatorMetricsRoute: CreatorMetricsRoute,
   CreatorNewRoute: CreatorNewRoute,
   CreatorNotificationsRoute: CreatorNotificationsRoute,
+  CreatorSettingsRoute: CreatorSettingsRoute,
   CreatorStatusRoute: CreatorStatusRoute,
   CreatorIndexRoute: CreatorIndexRoute,
 }
@@ -522,10 +583,12 @@ const CreatorRouteWithChildren =
 
 interface SuperadminRouteChildren {
   SuperadminDashboardRoute: typeof SuperadminDashboardRoute
+  SuperadminSettingsRoute: typeof SuperadminSettingsRoute
 }
 
 const SuperadminRouteChildren: SuperadminRouteChildren = {
   SuperadminDashboardRoute: SuperadminDashboardRoute,
+  SuperadminSettingsRoute: SuperadminSettingsRoute,
 }
 
 const SuperadminRouteWithChildren = SuperadminRoute._addFileChildren(
