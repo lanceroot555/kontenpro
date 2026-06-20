@@ -32,6 +32,7 @@ function AdminLayout() {
         { to: "/admin/approval",      label: "Approval Queue", badge: pending },
         { to: "/admin/contents",      label: "Konten Tim" },
         { to: "/admin/calendar",      label: "Kalender" },
+        { to: "/admin/export",        label: "Export Laporan" },
         { to: "/admin/notifications", label: "Notifikasi" },
         { to: "/admin/settings",      label: "Pengaturan Akun" },
       ]}
