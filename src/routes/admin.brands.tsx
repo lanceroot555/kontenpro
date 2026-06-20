@@ -32,9 +32,19 @@ function BrandsPage() {
   const { data: creators = [] } = useQuery({
     queryKey: ["admin-creators"],
     queryFn: async () => {
-      // Fetch users who are creators (actually just fetch all profiles, or join with user_roles)
-      // For simplicity, fetch all profiles and we'll just show them.
-      const { data, error } = await supabase.from("profiles").select("*").order("full_name");
+      // Hanya ambil user dengan role creator
+      const { data: roles, error: rErr } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "creator");
+      if (rErr) throw rErr;
+      const creatorIds = roles.map((r) => r.user_id);
+      if (creatorIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .in("user_id", creatorIds)
+        .order("full_name");
       if (error) throw error;
       return (data as Profile[]) ?? [];
     },
