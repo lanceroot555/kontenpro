@@ -27,6 +27,8 @@ function StatusPage() {
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 10;
 
   const [open, setOpen] = useState<Content | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -75,6 +77,8 @@ function StatusPage() {
     (statusFilter === "all" || c.status === statusFilter) &&
     (platformFilter === "all" || c.platforms.includes(platformFilter))
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   function startEdit(c: Content) {
     setEditTitle(c.title);
@@ -148,7 +152,7 @@ function StatusPage() {
       <h2 className="text-4xl font-bold tracking-tight mt-1">Status Kontenku</h2>
 
       <div className="flex gap-3 mt-6">
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-ink p-2 bg-white text-sm">
+        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="border border-ink p-2 bg-white text-sm">
           <option value="all">Semua Status</option>
           <option value="draft">Draft</option>
           <option value="submitted">Submitted</option>
@@ -156,7 +160,7 @@ function StatusPage() {
           <option value="approved">Approved</option>
           <option value="published">Published</option>
         </select>
-        <select value={platformFilter} onChange={(e) => setPlatformFilter(e.target.value)} className="border border-ink p-2 bg-white text-sm">
+        <select value={platformFilter} onChange={(e) => { setPlatformFilter(e.target.value); setPage(1); }} className="border border-ink p-2 bg-white text-sm">
           <option value="all">Semua Platform</option>
           <option value="instagram">Instagram</option>
           <option value="tiktok">TikTok</option>
@@ -195,17 +199,39 @@ function StatusPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((c) => (
-                <StatusRow 
-                  key={c.id} 
-                  c={c} 
+              {paginated.map((c) => (
+                <StatusRow
+                  key={c.id}
+                  c={c}
                   qc={qc}
-                  onDetail={() => { setOpen(c); setEditMode(false); }} 
-                  onRevisi={() => { setOpen(c); startEdit(c); }} 
+                  onDetail={() => { setOpen(c); setEditMode(false); }}
+                  onRevisi={() => { setOpen(c); startEdit(c); }}
                 />
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+            className="border border-ink px-4 py-2 text-[12px] uppercase tracking-[0.06em] font-medium hover:bg-ink hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            ← Prev
+          </button>
+          <span className="text-sm text-muted-foreground">
+            Halaman {page} dari {totalPages} &nbsp;·&nbsp; {filtered.length} konten
+          </span>
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className="border border-ink px-4 py-2 text-[12px] uppercase tracking-[0.06em] font-medium hover:bg-ink hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Next →
+          </button>
         </div>
       )}
 
