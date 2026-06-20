@@ -94,7 +94,6 @@ function LoginForm() {
       </button>
       <div className="flex justify-between text-sm">
         <Link to="/forgot-password" className="underline">Lupa password?</Link>
-        <Link to="/" className="text-muted-foreground hover:underline">← Beranda</Link>
       </div>
     </form>
   );
