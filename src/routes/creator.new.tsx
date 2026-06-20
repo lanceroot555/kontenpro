@@ -48,6 +48,7 @@ function NewContent() {
 
   const [brandId, setBrandId] = useState("");
   const [title, setTitle] = useState("");
+  const [contentType, setContentType] = useState<"viral" | "related" | "evergreen">("related");
   const [platforms, setPlatforms] = useState<PlatformKey[]>([]);
   const [scheduledDate, setScheduledDate] = useState(prefilledDate && prefilledDate >= today ? prefilledDate : today);
   const [caption, setCaption] = useState("");
@@ -115,6 +116,7 @@ function NewContent() {
         brand_name: selectedBrand?.name,
         title, caption, copywriting, hashtags, platforms,
         scheduled_date: scheduledDate, notes: notes || null, status,
+        content_type: contentType,
       }).select("id").single();
       if (error) throw error;
 
@@ -158,6 +160,26 @@ function NewContent() {
         <Field label="Judul Konten" error={errors.title}>
           <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} className="input" />
           <Counter v={title.length} max={100} />
+        </Field>
+
+        <Field label="Tipe Konten">
+          <div className="flex gap-0 border border-ink/40">
+            {([
+              { value: "viral", label: "🔥 Viral", desc: "Konten trending & hiburan" },
+              { value: "related", label: "🎯 Related", desc: "Relevan dengan brand" },
+              { value: "evergreen", label: "🌿 Evergreen", desc: "Selalu relevan sepanjang waktu" },
+            ] as const).map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => setContentType(t.value)}
+                className={`flex-1 py-3 px-3 text-left border-r border-ink/20 last:border-r-0 transition-colors ${contentType === t.value ? "bg-ink text-white" : "bg-white hover:bg-ink/5"}`}
+              >
+                <div className="text-[12px] font-semibold">{t.label}</div>
+                <div className={`text-[10px] mt-0.5 ${contentType === t.value ? "text-white/70" : "text-muted-foreground"}`}>{t.desc}</div>
+              </button>
+            ))}
+          </div>
         </Field>
 
         <Field label="Platform Target" error={errors.platforms}>

@@ -87,7 +87,7 @@ export function AppShell({
       {/* Sidebar */}
       <aside className={`${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:sticky top-0 z-50 md:z-auto w-60 h-screen bg-ink text-white flex flex-col transition-transform`}>
         <div className="px-5 py-5 border-b border-white/10 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to={role === "superadmin" ? "/superadmin/dashboard" : role === "admin" ? "/admin/dashboard" : "/creator/new"} className="flex items-center gap-2">
             <div className="h-5 w-5 bg-primary" />
             <span className="font-bold tracking-tight">KONTENPRO</span>
           </Link>

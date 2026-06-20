@@ -11,10 +11,18 @@ export const Route = createFileRoute("/admin/calendar")({
   component: AdminCalendarPage,
 });
 
+type ContentType = "viral" | "related" | "evergreen";
+
+const CONTENT_TYPE_CONFIG: Record<ContentType, { label: string; color: string }> = {
+  viral:     { label: "🔥 Viral",    color: "bg-orange-100 text-orange-700 border-orange-200" },
+  related:   { label: "🎯 Related",  color: "bg-blue-100 text-blue-700 border-blue-200" },
+  evergreen: { label: "🌿 Evergreen",color: "bg-green-100 text-green-700 border-green-200" },
+};
+
 type Content = {
   id: string; title: string; brand_name: string | null; status: "draft"|"submitted"|"revision"|"approved"|"published";
   platforms: string[]; scheduled_date: string; caption: string | null; revision_comments: string | null;
-  hashtags: string[];
+  hashtags: string[]; content_type: ContentType | null;
   file_url: string | null; post_url: string | null; platform_metrics: any;
   creator: { full_name: string } | null;
   brands: { name: string; color: string } | null;
@@ -45,7 +53,7 @@ function AdminCalendarPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contents")
-        .select("id,title,brand_name,status,platforms,scheduled_date,caption,revision_comments,hashtags,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(full_name),brands(name,color)")
+        .select("id,title,brand_name,status,platforms,scheduled_date,caption,revision_comments,hashtags,content_type,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(full_name),brands(name,color)")
         .gte("scheduled_date", rangeStart)
         .lte("scheduled_date", rangeEnd);
       if (error) throw error;
@@ -112,7 +120,14 @@ function AdminCalendarPage() {
                 <button key={c.id} onClick={() => { setOpenContent(c); setSelectedDay(null); }} className="w-full text-left border border-ink/15 p-4 hover:bg-[#F5F5F0]" style={c.brands ? { borderLeft: `6px solid ${c.brands.color}` } : {}}>
                   <div className="flex justify-between items-start gap-2">
                     <div>
-                      <div className="font-medium text-base">{c.title}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="font-medium text-base">{c.title}</div>
+                        {c.content_type && CONTENT_TYPE_CONFIG[c.content_type] && (
+                          <span className={`text-[10px] uppercase tracking-[0.06em] font-semibold px-1.5 py-0.5 border ${CONTENT_TYPE_CONFIG[c.content_type].color}`}>
+                            {CONTENT_TYPE_CONFIG[c.content_type].label}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground mt-1">Oleh: {c.creator?.full_name || "Unknown"}</div>
                       <div className="text-xs mt-0.5" style={{ color: c.brands?.color || "inherit" }}>Brand: {c.brands?.name || c.brand_name || "Unknown"}</div>
                     </div>
@@ -152,7 +167,14 @@ function AdminCalendarPage() {
                   Brand: <span className="font-semibold" style={{ color: openContent.brands?.color || "inherit" }}>{openContent.brands?.name || openContent.brand_name || "Unknown"}</span>
                 </div>
               </div>
-              <div className="flex gap-1 flex-wrap">{openContent.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex gap-1 flex-wrap">{openContent.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}</div>
+                {openContent.content_type && CONTENT_TYPE_CONFIG[openContent.content_type] && (
+                  <span className={`text-[11px] uppercase tracking-[0.06em] font-semibold px-2 py-1 border ${CONTENT_TYPE_CONFIG[openContent.content_type].color}`}>
+                    {CONTENT_TYPE_CONFIG[openContent.content_type].label}
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4 border border-ink/10 p-4 bg-[#F5F5F0]">
                 <div>
                   <div className="label-caps text-muted-foreground">Tayang</div>

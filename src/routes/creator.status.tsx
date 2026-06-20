@@ -13,12 +13,21 @@ export const Route = createFileRoute("/creator/status")({
   component: StatusPage,
 });
 
+type ContentType = "viral" | "related" | "evergreen";
+
+const CONTENT_TYPE_CONFIG: Record<ContentType, { label: string; color: string }> = {
+  viral:     { label: "🔥 Viral",    color: "bg-orange-100 text-orange-700 border-orange-200" },
+  related:   { label: "🎯 Related",  color: "bg-blue-100 text-blue-700 border-blue-200" },
+  evergreen: { label: "🌿 Evergreen",color: "bg-green-100 text-green-700 border-green-200" },
+};
+
 export type Content = {
   id: string; title: string; brand_name: string | null; status: "draft"|"submitted"|"revision"|"approved"|"published";
   platforms: string[]; scheduled_date: string; created_at: string; updated_at: string;
   caption: string | null; copywriting: string | null; notes: string | null; hashtags: string[];
   post_url: string | null; revision_comments: string | null; file_url: string | null;
   likes: number; views: number; shares: number; engagement_rate: number; platform_metrics: any;
+  content_type: ContentType | null;
   brands: { name: string; color: string } | null;
 };
 
@@ -282,7 +291,14 @@ function StatusPage() {
 
               {!editMode ? (
                 <>
-                  <h3 className="text-2xl font-bold tracking-tight">{open.title}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-2xl font-bold tracking-tight">{open.title}</h3>
+                    {open.content_type && CONTENT_TYPE_CONFIG[open.content_type] && (
+                      <span className={`text-[11px] uppercase tracking-[0.06em] font-semibold px-2 py-1 border ${CONTENT_TYPE_CONFIG[open.content_type].color}`}>
+                        {CONTENT_TYPE_CONFIG[open.content_type].label}
+                      </span>
+                    )}
+                  </div>
                   {open.brand_name && <><div className="label-caps text-muted-foreground">Brand</div><div>{open.brand_name}</div></>}
                   <div className="label-caps text-muted-foreground">Platform</div><div className="flex gap-1 flex-wrap">{open.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}</div>
                   <div className="label-caps text-muted-foreground">Tayang</div><div>{formatDate(open.scheduled_date)}</div>
@@ -453,7 +469,14 @@ function StatusRow({ c, onDetail, onRevisi, qc }: { c: Content, onDetail: ()=>vo
   return (
     <tr className="border-b border-ink/10 last:border-b-0 hover:bg-[#F5F5F0]">
       <td className="p-3 cursor-pointer" onClick={onDetail}>
-        <div className="font-medium">{c.title}</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-medium">{c.title}</span>
+          {c.content_type && CONTENT_TYPE_CONFIG[c.content_type] && (
+            <span className={`text-[10px] uppercase tracking-[0.06em] font-semibold px-1.5 py-0.5 border ${CONTENT_TYPE_CONFIG[c.content_type].color}`}>
+              {CONTENT_TYPE_CONFIG[c.content_type].label}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-1.5 mt-1">
            {(c.brands || c.brand_name) && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.brands?.color || '#000' }} />}
            <div className="text-xs font-semibold" style={{ color: c.brands?.color || 'inherit' }}>{c.brands?.name || c.brand_name || "Unknown Brand"}</div>

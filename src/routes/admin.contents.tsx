@@ -10,12 +10,20 @@ export const Route = createFileRoute("/admin/contents")({
   component: AllContents,
 });
 
+type ContentType = "viral" | "related" | "evergreen";
+
+const CONTENT_TYPE_CONFIG: Record<ContentType, { label: string; color: string }> = {
+  viral:     { label: "🔥 Viral",    color: "bg-orange-100 text-orange-700 border-orange-200" },
+  related:   { label: "🎯 Related",  color: "bg-blue-100 text-blue-700 border-blue-200" },
+  evergreen: { label: "🌿 Evergreen",color: "bg-green-100 text-green-700 border-green-200" },
+};
+
 type Row = {
   id: string; title: string; brand_name: string | null; status: "draft"|"submitted"|"revision"|"approved"|"published";
   platforms: string[]; scheduled_date: string; created_at: string;
   caption: string | null; copywriting: string | null; notes: string | null;
   post_url: string | null; revision_comments: string | null;
-  file_url: string | null;
+  file_url: string | null; content_type: ContentType | null;
   creator: { full_name: string } | null;
   brands: { name: string; color: string } | null;
 };
@@ -31,7 +39,7 @@ function AllContents() {
     queryKey: ["admin-contents"],
     queryFn: async () => {
       const { data, error } = await supabase.from("contents")
-        .select("id,title,brand_name,status,platforms,scheduled_date,created_at,caption,copywriting,notes,post_url,revision_comments,file_url,creator:profiles!contents_creator_id_fkey(full_name),brands(name,color)")
+        .select("id,title,brand_name,status,platforms,scheduled_date,created_at,caption,copywriting,notes,post_url,revision_comments,file_url,content_type,creator:profiles!contents_creator_id_fkey(full_name),brands(name,color)")
         .order("scheduled_date", { ascending: false });
       if (error) throw error;
       return (data as unknown as Row[]) ?? [];
@@ -78,7 +86,14 @@ function AllContents() {
                 <tr key={r.id} className="border-b border-ink/10 last:border-b-0 hover:bg-[#F5F5F0] cursor-pointer" onClick={() => setOpen(r)}>
                   <td className="p-3 text-muted-foreground">{i + 1}</td>
                   <td className="p-3">
-                    <div className="font-medium">{r.title}</div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium">{r.title}</span>
+                      {r.content_type && CONTENT_TYPE_CONFIG[r.content_type] && (
+                        <span className={`text-[10px] uppercase tracking-[0.08em] font-semibold px-2 py-0.5 border ${CONTENT_TYPE_CONFIG[r.content_type].color}`}>
+                          {CONTENT_TYPE_CONFIG[r.content_type].label}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5 mt-1">
                       {(r.brands || r.brand_name) && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: r.brands?.color || '#000' }} />}
                       <div className="text-xs font-semibold" style={{ color: r.brands?.color || 'inherit' }}>{r.brands?.name || r.brand_name || "Unknown Brand"}</div>
@@ -105,6 +120,14 @@ function AllContents() {
             </div>
             <div className="p-5 space-y-3 text-sm">
               <h3 className="text-2xl font-bold tracking-tight">{open.title}</h3>
+              {open.content_type && CONTENT_TYPE_CONFIG[open.content_type] && (
+                <div>
+                  <div className="label-caps text-muted-foreground mb-1">Tipe Konten</div>
+                  <span className={`text-[11px] uppercase tracking-[0.08em] font-semibold px-2 py-1 border inline-block ${CONTENT_TYPE_CONFIG[open.content_type].color}`}>
+                    {CONTENT_TYPE_CONFIG[open.content_type].label}
+                  </span>
+                </div>
+              )}
               <div className="label-caps text-muted-foreground">Creator</div><div>{open.creator?.full_name}</div>
               <div className="label-caps text-muted-foreground">Platform</div><div className="flex gap-1 flex-wrap">{open.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}</div>
               <div className="label-caps text-muted-foreground">Tayang</div><div>{formatDate(open.scheduled_date)}</div>

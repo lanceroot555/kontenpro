@@ -12,10 +12,18 @@ export const Route = createFileRoute("/admin/approval")({
   component: ApprovalQueue,
 });
 
+type ContentType = "viral" | "related" | "evergreen";
+
+const CONTENT_TYPE_CONFIG: Record<ContentType, { label: string; color: string }> = {
+  viral:     { label: "🔥 Viral",    color: "bg-orange-100 text-orange-700 border-orange-200" },
+  related:   { label: "🎯 Related",  color: "bg-blue-100 text-blue-700 border-blue-200" },
+  evergreen: { label: "🌿 Evergreen",color: "bg-green-100 text-green-700 border-green-200" },
+};
+
 type Row = {
   id: string; title: string; brand_name: string | null; caption: string | null; status: "submitted"|"revision";
   platforms: string[]; scheduled_date: string; revision_comments: string | null;
-  hashtags: string[];
+  hashtags: string[]; content_type: ContentType | null;
   file_url: string | null; post_url: string | null; platform_metrics: any;
   creator: { id: string; full_name: string; user_id: string } | null;
   brands: { name: string; color: string } | null;
@@ -34,7 +42,7 @@ function ApprovalQueue() {
     queryKey: ["approval-queue", filter],
     queryFn: async () => {
       let q = supabase.from("contents")
-        .select("id,title,brand_name,caption,status,platforms,scheduled_date,revision_comments,hashtags,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(id,full_name,user_id),brands(name,color)")
+        .select("id,title,brand_name,caption,status,platforms,scheduled_date,revision_comments,hashtags,content_type,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(id,full_name,user_id),brands(name,color)")
         .order("scheduled_date", { ascending: true });
       if (filter === "all") q = q.in("status", ["submitted","revision"]);
       else q = q.eq("status", filter);
@@ -100,7 +108,14 @@ function ApprovalQueue() {
             <div key={r.id} className="bg-white border border-ink/15 p-5">
               <div className="flex justify-between items-start gap-3">
                 <div className="min-w-0">
-                  <h3 className="text-lg font-semibold">{r.title}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg font-semibold">{r.title}</h3>
+                    {r.content_type && CONTENT_TYPE_CONFIG[r.content_type] && (
+                      <span className={`text-[10px] uppercase tracking-[0.08em] font-semibold px-2 py-0.5 border ${CONTENT_TYPE_CONFIG[r.content_type].color}`}>
+                        {CONTENT_TYPE_CONFIG[r.content_type].label}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1.5 mt-1">
                     {(r.brands || r.brand_name) && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: r.brands?.color || '#000' }} />}
                     <div className="text-sm font-semibold" style={{ color: r.brands?.color || 'inherit' }}>{r.brands?.name || r.brand_name || "Unknown Brand"}</div>
