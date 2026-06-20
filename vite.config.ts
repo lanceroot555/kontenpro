@@ -12,4 +12,6 @@ export default defineConfig({
     }),
     tailwindcss(),
     react(),
-    tsconfig
+    tsconfigPaths(),
+  ],
+});
