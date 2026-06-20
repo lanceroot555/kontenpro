@@ -14,6 +14,7 @@ export const Route = createFileRoute("/admin/calendar")({
 type Content = {
   id: string; title: string; brand_name: string | null; status: "draft"|"submitted"|"revision"|"approved"|"published";
   platforms: string[]; scheduled_date: string; caption: string | null; revision_comments: string | null;
+  hashtags: string[];
   file_url: string | null; post_url: string | null; platform_metrics: any;
   creator: { full_name: string } | null;
   brands: { name: string; color: string } | null;
@@ -44,7 +45,7 @@ function AdminCalendarPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contents")
-        .select("id,title,brand_name,status,platforms,scheduled_date,caption,revision_comments,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(full_name),brands(name,color)")
+        .select("id,title,brand_name,status,platforms,scheduled_date,caption,revision_comments,hashtags,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(full_name),brands(name,color)")
         .gte("scheduled_date", rangeStart)
         .lte("scheduled_date", rangeEnd);
       if (error) throw error;
@@ -118,6 +119,16 @@ function AdminCalendarPage() {
                     <StatusBadge status={c.status} />
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1">{c.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}</div>
+                  {c.hashtags?.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {c.hashtags.slice(0, 5).map((tag) => (
+                        <span key={tag} className="text-[10px] bg-ink/5 border border-ink/15 px-1.5 py-0.5 text-primary font-medium">
+                          {tag.startsWith("#") ? tag : `#${tag}`}
+                        </span>
+                      ))}
+                      {c.hashtags.length > 5 && <span className="text-[10px] text-muted-foreground">+{c.hashtags.length - 5}</span>}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -169,6 +180,18 @@ function AdminCalendarPage() {
                 <div>
                   <div className="label-caps text-muted-foreground mb-1">Caption</div>
                   <p className="text-[15px] whitespace-pre-wrap leading-relaxed">{openContent.caption}</p>
+                </div>
+              )}
+              {openContent.hashtags?.length > 0 && (
+                <div>
+                  <div className="label-caps text-muted-foreground mb-2">Hashtag</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {openContent.hashtags.map((tag) => (
+                      <span key={tag} className="text-[12px] bg-ink/5 border border-ink/15 px-2.5 py-1 text-primary font-medium">
+                        {tag.startsWith("#") ? tag : `#${tag}`}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
               {openContent.status === "revision" && openContent.revision_comments && (

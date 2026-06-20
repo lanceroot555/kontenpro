@@ -15,6 +15,7 @@ export const Route = createFileRoute("/admin/approval")({
 type Row = {
   id: string; title: string; brand_name: string | null; caption: string | null; status: "submitted"|"revision";
   platforms: string[]; scheduled_date: string; revision_comments: string | null;
+  hashtags: string[];
   file_url: string | null; post_url: string | null; platform_metrics: any;
   creator: { id: string; full_name: string; user_id: string } | null;
   brands: { name: string; color: string } | null;
@@ -33,7 +34,7 @@ function ApprovalQueue() {
     queryKey: ["approval-queue", filter],
     queryFn: async () => {
       let q = supabase.from("contents")
-        .select("id,title,brand_name,caption,status,platforms,scheduled_date,revision_comments,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(id,full_name,user_id),brands(name,color)")
+        .select("id,title,brand_name,caption,status,platforms,scheduled_date,revision_comments,hashtags,file_url,post_url,platform_metrics,creator:profiles!contents_creator_id_fkey(id,full_name,user_id),brands(name,color)")
         .order("scheduled_date", { ascending: true });
       if (filter === "all") q = q.in("status", ["submitted","revision"]);
       else q = q.eq("status", filter);
@@ -108,6 +109,15 @@ function ApprovalQueue() {
                   <div className="mt-2 flex gap-1 flex-wrap">{r.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}</div>
                   <div className="text-sm text-muted-foreground mt-2">Tayang: {formatDate(r.scheduled_date)}</div>
                   {r.caption && <p className="text-sm mt-3 line-clamp-2">{r.caption.slice(0, 200)}</p>}
+                  {r.hashtags?.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {r.hashtags.map((tag) => (
+                        <span key={tag} className="text-[11px] bg-ink/5 border border-ink/15 px-2 py-0.5 text-primary font-medium">
+                          {tag.startsWith("#") ? tag : `#${tag}`}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <StatusBadge status={r.status} />
               </div>

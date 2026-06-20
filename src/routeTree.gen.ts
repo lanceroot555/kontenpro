@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -35,7 +36,13 @@ import { Route as AdminContentsRouteImport } from './routes/admin.contents'
 import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
 import { Route as AdminBrandsRouteImport } from './routes/admin.brands'
 import { Route as AdminApprovalRouteImport } from './routes/admin.approval'
+import { Route as AdminExportRouteImport } from './routes/admin.export'
 
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth-callback',
+  path: '/auth-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
@@ -166,11 +173,17 @@ const AdminApprovalRoute = AdminApprovalRouteImport.update({
   path: '/approval',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminExportRoute = AdminExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/creator': typeof CreatorRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/pending': typeof PendingRoute
@@ -182,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/contents': typeof AdminContentsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/export': typeof AdminExportRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/creator/calendar': typeof CreatorCalendarRoute
@@ -198,6 +212,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/pending': typeof PendingRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -208,6 +223,7 @@ export interface FileRoutesByTo {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/contents': typeof AdminContentsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/export': typeof AdminExportRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/creator/calendar': typeof CreatorCalendarRoute
@@ -226,6 +242,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/creator': typeof CreatorRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/pending': typeof PendingRoute
@@ -237,6 +254,7 @@ export interface FileRoutesById {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/contents': typeof AdminContentsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/export': typeof AdminExportRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/creator/calendar': typeof CreatorCalendarRoute
@@ -256,6 +274,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/auth-callback'
     | '/creator'
     | '/forgot-password'
     | '/pending'
@@ -267,6 +286,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/contents'
     | '/admin/dashboard'
+    | '/admin/export'
     | '/admin/notifications'
     | '/admin/settings'
     | '/creator/calendar'
@@ -283,6 +303,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/auth-callback'
     | '/forgot-password'
     | '/pending'
     | '/reset-password'
@@ -293,6 +314,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/contents'
     | '/admin/dashboard'
+    | '/admin/export'
     | '/admin/notifications'
     | '/admin/settings'
     | '/creator/calendar'
@@ -310,6 +332,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/auth-callback'
     | '/creator'
     | '/forgot-password'
     | '/pending'
@@ -321,6 +344,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/contents'
     | '/admin/dashboard'
+    | '/admin/export'
     | '/admin/notifications'
     | '/admin/settings'
     | '/creator/calendar'
@@ -339,6 +363,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   CreatorRoute: typeof CreatorRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   PendingRoute: typeof PendingRoute
@@ -531,6 +556,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminApprovalRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/export': {
+      id: '/admin/export'
+      path: '/export'
+      fullPath: '/admin/export'
+      preLoaderRoute: typeof AdminExportRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/auth-callback': {
+      id: '/auth-callback'
+      path: '/auth-callback'
+      fullPath: '/auth-callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -540,6 +579,7 @@ interface AdminRouteChildren {
   AdminCalendarRoute: typeof AdminCalendarRoute
   AdminContentsRoute: typeof AdminContentsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminExportRoute: typeof AdminExportRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -551,6 +591,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCalendarRoute: AdminCalendarRoute,
   AdminContentsRoute: AdminContentsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminExportRoute: AdminExportRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -599,6 +640,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   CreatorRoute: CreatorRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   PendingRoute: PendingRoute,
