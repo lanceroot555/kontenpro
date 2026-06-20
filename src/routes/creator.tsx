@@ -16,6 +16,7 @@ function CreatorLayout() {
         { to: "/creator/status",        label: "Status Kontenku" },
         { to: "/creator/metrics",       label: "Metrik Personal" },
         { to: "/creator/notifications", label: "Notifikasi" },
+        { to: "/creator/settings",      label: "Pengaturan Akun" },
       ]}
     >
       <Outlet />

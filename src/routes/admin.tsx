@@ -33,6 +33,7 @@ function AdminLayout() {
         { to: "/admin/contents",      label: "Konten Tim" },
         { to: "/admin/calendar",      label: "Kalender" },
         { to: "/admin/notifications", label: "Notifikasi" },
+        { to: "/admin/settings",      label: "Pengaturan Akun" },
       ]}
     >
       <Outlet />

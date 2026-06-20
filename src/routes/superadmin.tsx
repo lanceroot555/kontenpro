@@ -12,6 +12,7 @@ function SuperadminLayout() {
       role="superadmin"
       navItems={[
         { to: "/superadmin/dashboard", label: "User Approval" },
+        { to: "/superadmin/settings",  label: "Pengaturan Akun" },
       ]}
     >
       <Outlet />

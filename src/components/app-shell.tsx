@@ -111,8 +111,12 @@ export function AppShell({
         </nav>
         <div className="p-4 border-t border-white/10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-8 w-8 bg-primary flex items-center justify-center text-[11px] font-bold">{initials}</div>
-            <div className="text-sm">
+            {auth.profile?.avatar_url ? (
+              <img src={auth.profile.avatar_url} alt="avatar" className="h-8 w-8 object-cover flex-shrink-0" />
+            ) : (
+              <div className="h-8 w-8 bg-primary flex items-center justify-center text-[11px] font-bold flex-shrink-0">{initials}</div>
+            )}
+            <div className="text-sm min-w-0">
               <div className="font-medium truncate max-w-[140px]">{auth.profile?.full_name}</div>
               <div className="text-[10px] uppercase tracking-[0.08em] text-white/50">{role}</div>
             </div>
@@ -132,12 +136,14 @@ export function AppShell({
               {navItems.find((n) => pathname === n.to || pathname.startsWith(n.to + "/"))?.label || "Dashboard"}
             </h1>
           </div>
-          <Link to={role === "admin" ? "/admin/notifications" : "/creator/notifications"} className="relative">
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold h-4 min-w-4 px-1 flex items-center justify-center">{unreadCount}</span>
-            )}
-          </Link>
+          {role !== "superadmin" && (
+            <Link to={role === "admin" ? "/admin/notifications" : "/creator/notifications"} className="relative">
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold h-4 min-w-4 px-1 flex items-center justify-center">{unreadCount}</span>
+              )}
+            </Link>
+          )}
         </header>
         <main className="flex-1 p-6 md:p-10">{children}</main>
       </div>
