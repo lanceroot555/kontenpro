@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
 
 export const Route = createFileRoute("/creator/new")({
+  validateSearch: z.object({ date: z.string().optional() }),
   component: NewContent,
 });
 
@@ -30,6 +31,7 @@ function NewContent() {
   const navigate = useNavigate();
   const auth = useAuth();
   const today = new Date().toISOString().slice(0, 10);
+  const { date: prefilledDate } = Route.useSearch();
 
   const { data: myBrands = [] } = useQuery({
     queryKey: ["my-brands", auth.profile?.id],
@@ -47,7 +49,7 @@ function NewContent() {
   const [brandId, setBrandId] = useState("");
   const [title, setTitle] = useState("");
   const [platforms, setPlatforms] = useState<PlatformKey[]>([]);
-  const [scheduledDate, setScheduledDate] = useState(today);
+  const [scheduledDate, setScheduledDate] = useState(prefilledDate && prefilledDate >= today ? prefilledDate : today);
   const [caption, setCaption] = useState("");
   const [copywriting, setCopywriting] = useState("");
   const [hashtagInput, setHashtagInput] = useState("");

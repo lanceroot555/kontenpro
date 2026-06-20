@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +25,9 @@ const STATUS_COLOR: Record<string, string> = {
 
 function CalendarPage() {
   const auth = useAuth();
+  const navigate = useNavigate();
   const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth()); // 0-11
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -96,23 +98,43 @@ function CalendarPage() {
           {cells.map((day, i) => {
             const dateStr = day ? `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}` : "";
             const items = day ? byDay[dateStr] ?? [] : [];
-            const isToday = day && new Date().toISOString().slice(0,10) === dateStr;
+            const isToday = day && todayStr === dateStr;
+            const isPast = day ? dateStr < todayStr : false;
+            const hasContent = items.length > 0;
+
+            function handleDayClick() {
+              if (!day || isPast) return;
+              if (hasContent) {
+                setSelectedDay(dateStr);
+              } else {
+                navigate({ to: "/creator/new", search: { date: dateStr } });
+              }
+            }
+
             return (
               <button
                 key={i}
-                disabled={!day}
-                onClick={() => setSelectedDay(dateStr)}
-                className={`min-h-[100px] p-2 border-r border-b border-ink/10 last:border-r-0 text-left ${day ? "hover:bg-[#F5F5F0]" : "bg-[#fafaf6]"} ${selectedDay === dateStr ? "bg-[#F5F5F0]" : ""}`}
+                disabled={!day || isPast}
+                onClick={handleDayClick}
+                title={isPast ? "Tanggal sudah lewat" : !hasContent && day ? "Klik untuk buat konten" : undefined}
+                className={`min-h-[100px] p-2 border-r border-b border-ink/10 last:border-r-0 text-left
+                  ${!day ? "bg-[#fafaf6]" : ""}
+                  ${isPast ? "bg-[#f0f0ec] cursor-not-allowed opacity-60" : day ? "hover:bg-[#F5F5F0] cursor-pointer" : ""}
+                  ${selectedDay === dateStr ? "bg-[#F5F5F0]" : ""}
+                `}
               >
                 {day && (
                   <>
-                    <div className={`text-sm font-medium ${isToday ? "text-primary" : ""}`}>{day}</div>
+                    <div className={`text-sm font-medium ${isToday ? "text-primary" : isPast ? "text-muted-foreground" : ""}`}>{day}</div>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {items.slice(0, 4).map((c) => (
                         <span key={c.id} className="h-3 w-3 inline-block rounded-sm" style={{ backgroundColor: c.brands?.color || STATUS_COLOR[c.status] }} title={c.title} />
                       ))}
                       {items.length > 4 && <span className="text-[10px] text-muted-foreground">+{items.length - 4}</span>}
                     </div>
+                    {!hasContent && !isPast && (
+                      <div className="mt-2 text-[10px] text-muted-foreground/50">+ Buat konten</div>
+                    )}
                   </>
                 )}
               </button>
