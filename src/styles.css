@@ -1,0 +1,159 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* KontenPro — Swiss Style design system */
+
+@theme inline {
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  /* Swiss palette */
+  --color-ink: #0A0A0A;
+  --color-paper: #F5F5F0;
+  --color-surface: #FFFFFF;
+  --color-red: #E8001D;
+  --color-gray-medium: #6B6B6B;
+  --color-gray-light: #E0E0E0;
+  --color-status-green: #00A651;
+  --color-status-yellow: #F5A623;
+  --color-status-orange: #E8741D;
+  --color-status-blue: #0057B8;
+
+  --color-chart-1: #E8001D;
+  --color-chart-2: #0057B8;
+  --color-chart-3: #00A651;
+  --color-chart-4: #F5A623;
+  --color-chart-5: #0A0A0A;
+
+  --color-sidebar: #0A0A0A;
+  --color-sidebar-foreground: #FFFFFF;
+  --color-sidebar-primary: #E8001D;
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent: #1a1a1a;
+  --color-sidebar-accent-foreground: #FFFFFF;
+  --color-sidebar-border: #1a1a1a;
+  --color-sidebar-ring: #E8001D;
+}
+
+:root {
+  --radius: 0px;
+  --background: #F5F5F0;
+  --foreground: #0A0A0A;
+  --card: #FFFFFF;
+  --card-foreground: #0A0A0A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0A0A0A;
+  --primary: #E8001D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFFFFF;
+  --secondary-foreground: #0A0A0A;
+  --muted: #F5F5F0;
+  --muted-foreground: #6B6B6B;
+  --accent: #F5F5F0;
+  --accent-foreground: #0A0A0A;
+  --destructive: #E8001D;
+  --destructive-foreground: #FFFFFF;
+  --border: #E0E0E0;
+  --input: #6B6B6B;
+  --ring: #0A0A0A;
+}
+
+.dark {
+  --background: #0A0A0A;
+  --foreground: #F5F5F0;
+  --card: #141414;
+  --card-foreground: #F5F5F0;
+  --popover: #141414;
+  --popover-foreground: #F5F5F0;
+  --primary: #E8001D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #F5F5F0;
+  --muted: #1a1a1a;
+  --muted-foreground: #9a9a9a;
+  --accent: #1a1a1a;
+  --accent-foreground: #F5F5F0;
+  --destructive: #E8001D;
+  --destructive-foreground: #FFFFFF;
+  --border: #2a2a2a;
+  --input: #6B6B6B;
+  --ring: #F5F5F0;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html, body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+  }
+}
+
+@utility label-caps {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@utility swiss-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(10,10,10,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(10,10,10,0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@keyframes kp-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@utility kp-fade-up {
+  animation: kp-fade-up 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes kp-count {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+@utility kp-count {
+  animation: kp-count 1.2s ease-out both;
+}
