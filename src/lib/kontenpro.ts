@@ -14,12 +14,13 @@ export async function notify(userId: string, type: string, message: string, cont
   await supabase.from("notifications").insert({ user_id: userId, type, message, content_id: contentId ?? null });
 }
 
-// Notify all admins by inserting one notification per admin
+// Notify all admins + superadmins by inserting one notification per user
 export async function notifyAdmins(type: string, message: string, contentId?: string) {
-  const { data: admins } = await supabase.from("user_roles").select("user_id").eq("role", "admin");
-  if (!admins?.length) return;
+  const { data: roles } = await supabase
+    .from("user_roles").select("user_id").in("role", ["admin", "superadmin"]);
+  if (!roles?.length) return;
   await supabase.from("notifications").insert(
-    admins.map((a) => ({ user_id: a.user_id, type, message, content_id: contentId ?? null }))
+    roles.map((a) => ({ user_id: a.user_id, type, message, content_id: contentId ?? null }))
   );
 }
 

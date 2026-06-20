@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Bell, LogOut, Menu, X } from "lucide-react";
 import { useAuth, type AppRole } from "@/lib/use-auth";
 import { toast } from "sonner";
+import { GlobalSearch } from "@/components/global-search";
 
 type NavItem = { to: string; label: string; badge?: number };
 
@@ -136,14 +137,16 @@ export function AppShell({
               {navItems.find((n) => pathname === n.to || pathname.startsWith(n.to + "/"))?.label || "Dashboard"}
             </h1>
           </div>
-          {role !== "superadmin" && (
-            <Link to={role === "admin" ? "/admin/notifications" : "/creator/notifications"} className="relative">
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold h-4 min-w-4 px-1 flex items-center justify-center">{unreadCount}</span>
-              )}
-            </Link>
-          )}
+          <GlobalSearch role={role} />
+          <Link
+            to={role === "superadmin" ? "/superadmin/notifications" : role === "admin" ? "/admin/notifications" : "/creator/notifications"}
+            className="relative"
+          >
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold h-4 min-w-4 px-1 flex items-center justify-center">{unreadCount}</span>
+            )}
+          </Link>
         </header>
         <main className="flex-1 p-6 md:p-10">{children}</main>
       </div>

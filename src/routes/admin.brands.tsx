@@ -9,7 +9,7 @@ export const Route = createFileRoute("/admin/brands")({
   component: BrandsPage,
 });
 
-type Brand = { id: string; name: string; color: string; created_at: string };
+type Brand = { id: string; name: string; color: string; created_at: string; default_hashtags: string[] };
 type Profile = { id: string; full_name: string; user_id: string };
 
 function BrandsPage() {
@@ -17,8 +17,6 @@ function BrandsPage() {
   const [name, setName] = useState("");
   const [color, setColor] = useState("#000000");
   const [saving, setSaving] = useState(false);
-  
-  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
   const { data: brands = [] } = useQuery({
     queryKey: ["admin-brands"],
@@ -32,19 +30,13 @@ function BrandsPage() {
   const { data: creators = [] } = useQuery({
     queryKey: ["admin-creators"],
     queryFn: async () => {
-      // Hanya ambil user dengan role creator
       const { data: roles, error: rErr } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "creator");
+        .from("user_roles").select("user_id").eq("role", "creator");
       if (rErr) throw rErr;
       const creatorIds = roles.map((r) => r.user_id);
       if (creatorIds.length === 0) return [];
       const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .in("user_id", creatorIds)
-        .order("full_name");
+        .from("profiles").select("*").in("user_id", creatorIds).order("full_name");
       if (error) throw error;
       return (data as Profile[]) ?? [];
     },
@@ -127,40 +119,125 @@ function BrandsPage() {
           )}
 
           {brands.map(brand => (
-            <div key={brand.id} className="bg-white border border-ink/15 overflow-hidden">
-              <div className="p-4 border-b border-ink/10 flex justify-between items-center" style={{ borderLeft: `6px solid ${brand.color}` }}>
-                <div>
-                  <h3 className="text-xl font-bold tracking-tight">{brand.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: brand.color }} />
-                     <span className="text-xs text-muted-foreground uppercase font-mono">{brand.color}</span>
-                  </div>
-                </div>
-                <button onClick={() => deleteBrand(brand.id)} className="text-primary hover:bg-primary/10 p-2 rounded-full transition-colors" title="Hapus Brand">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-4 bg-[#F5F5F0]/50">
-                <div className="label-caps mb-3 text-muted-foreground">Assign ke Kreator</div>
-                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {creators.map(c => {
-                    const isMember = memberships.some(m => m.brand_id === brand.id && m.user_id === c.id);
-                    return (
-                      <label key={c.id} className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${isMember ? 'border-ink bg-white' : 'border-ink/10 bg-white/50 opacity-70 hover:opacity-100'}`}>
-                        <input 
-                          type="checkbox" 
-                          checked={isMember} 
-                          onChange={() => toggleMember(brand.id, c.id, isMember)} 
-                          className="w-4 h-4 accent-ink"
-                        />
-                        <span className="text-sm font-medium">{c.full_name}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <BrandCard
+              key={brand.id}
+              brand={brand}
+              creators={creators}
+              memberships={memberships}
+              onDelete={deleteBrand}
+              onToggle={toggleMember}
+              onUpdate={() => qc.invalidateQueries({ queryKey: ["admin-brands"] })}
+            />
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BrandCard({
+  brand, creators, memberships, onDelete, onToggle, onUpdate
+}: {
+  brand: Brand;
+  creators: Profile[];
+  memberships: any[];
+  onDelete: (id: string) => void;
+  onToggle: (brandId: string, profileId: string, isMember: boolean) => void;
+  onUpdate: () => void;
+}) {
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>(brand.default_hashtags ?? []);
+  const [savingTags, setSavingTags] = useState(false);
+
+  function addTag(raw: string) {
+    const list = raw.split(/[,\s]+/).map(s => s.trim().replace(/^#/, "")).filter(Boolean);
+    if (!list.length) return;
+    setTags(prev => [...new Set([...prev, ...list])]);
+    setTagInput("");
+  }
+
+  function removeTag(t: string) {
+    setTags(prev => prev.filter(x => x !== t));
+  }
+
+  async function saveTags() {
+    setSavingTags(true);
+    const { error } = await supabase.from("brands").update({ default_hashtags: tags }).eq("id", brand.id);
+    setSavingTags(false);
+    if (error) toast.error(error.message);
+    else { toast.success("Hashtag default tersimpan"); onUpdate(); }
+  }
+
+  const isDirty = JSON.stringify(tags) !== JSON.stringify(brand.default_hashtags ?? []);
+
+  return (
+    <div className="bg-white border border-ink/15 overflow-hidden">
+      <div className="p-4 border-b border-ink/10 flex justify-between items-center" style={{ borderLeft: `6px solid ${brand.color}` }}>
+        <div>
+          <h3 className="text-xl font-bold tracking-tight">{brand.name}</h3>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: brand.color }} />
+            <span className="text-xs text-muted-foreground uppercase font-mono">{brand.color}</span>
+          </div>
+        </div>
+        <button onClick={() => onDelete(brand.id)} className="text-primary hover:bg-primary/10 p-2 rounded-full transition-colors" title="Hapus Brand">
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Hashtag Library */}
+      <div className="p-4 border-b border-ink/10">
+        <div className="label-caps mb-2 text-muted-foreground">Hashtag Default</div>
+        <div className="flex gap-2">
+          <input
+            value={tagInput}
+            onChange={e => setTagInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(tagInput); } }}
+            onBlur={() => tagInput && addTag(tagInput)}
+            placeholder="Tambah hashtag, pisah dengan Enter atau koma"
+            className="flex-1 border border-ink/30 p-2 text-sm focus:border-ink outline-none"
+          />
+          {isDirty && (
+            <button onClick={saveTags} disabled={savingTags} className="bg-ink text-white px-4 py-2 text-[11px] uppercase tracking-[0.06em] font-medium disabled:opacity-50 whitespace-nowrap">
+              {savingTags ? "..." : "Simpan"}
+            </button>
+          )}
+        </div>
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {tags.map(t => (
+              <span key={t} className="inline-flex items-center gap-1 bg-ink/5 border border-ink/15 px-2 py-0.5 text-xs">
+                #{t}
+                <button onClick={() => removeTag(t)} className="text-muted-foreground hover:text-primary">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        {tags.length === 0 && (
+          <p className="text-xs text-muted-foreground mt-1">Belum ada hashtag default. Creator bisa tambah manual saat buat konten.</p>
+        )}
+      </div>
+
+      {/* Assign Creators */}
+      <div className="p-4 bg-[#F5F5F0]/50">
+        <div className="label-caps mb-3 text-muted-foreground">Assign ke Kreator</div>
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {creators.map(c => {
+            const isMember = memberships.some(m => m.brand_id === brand.id && m.user_id === c.id);
+            return (
+              <label key={c.id} className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${isMember ? "border-ink bg-white" : "border-ink/10 bg-white/50 opacity-70 hover:opacity-100"}`}>
+                <input
+                  type="checkbox"
+                  checked={isMember}
+                  onChange={() => onToggle(brand.id, c.id, isMember)}
+                  className="w-4 h-4 accent-ink"
+                />
+                <span className="text-sm font-medium">{c.full_name}</span>
+              </label>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -27,6 +27,8 @@ function StatusPage() {
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const PER_PAGE = 10;
 
@@ -75,7 +77,9 @@ function StatusPage() {
 
   const filtered = contents.filter((c) =>
     (statusFilter === "all" || c.status === statusFilter) &&
-    (platformFilter === "all" || c.platforms.includes(platformFilter))
+    (platformFilter === "all" || c.platforms.includes(platformFilter)) &&
+    (!dateFrom || c.scheduled_date >= dateFrom) &&
+    (!dateTo || c.scheduled_date <= dateTo)
   );
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -168,6 +172,30 @@ function StatusPage() {
           <option value="youtube">YouTube</option>
           <option value="linkedin">LinkedIn</option>
         </select>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Tayang:</span>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+            className="border border-ink p-2 bg-white text-sm"
+          />
+          <span className="text-xs text-muted-foreground">–</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+            className="border border-ink p-2 bg-white text-sm"
+          />
+          {(dateFrom || dateTo) && (
+            <button
+              onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
+              className="text-xs text-primary underline whitespace-nowrap"
+            >
+              Reset
+            </button>
+          )}
+        </div>
       </div>
 
       {filtered.length === 0 ? (

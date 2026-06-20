@@ -39,7 +39,7 @@ function NewContent() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("brand_members")
-        .select("brands(id, name, color)")
+        .select("brands(id, name, color, default_hashtags)")
         .eq("user_id", auth.profile!.id);
       if (error) throw error;
       return (data as any[]).map(d => d.brands) ?? [];
@@ -54,6 +54,15 @@ function NewContent() {
   const [copywriting, setCopywriting] = useState("");
   const [hashtagInput, setHashtagInput] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
+
+  // Auto-fill hashtag dari brand yang dipilih
+  function handleBrandChange(id: string) {
+    setBrandId(id);
+    const brand = myBrands.find((b: any) => b.id === id);
+    if (brand?.default_hashtags?.length) {
+      setHashtags(brand.default_hashtags);
+    }
+  }
   const [notes, setNotes] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -137,7 +146,7 @@ function NewContent() {
 
       <div className="mt-8 bg-white border border-ink/15 p-6 space-y-6">
         <Field label="Brand / Klien" error={errors.brand_id}>
-          <select value={brandId} onChange={(e) => setBrandId(e.target.value)} className="input bg-white cursor-pointer">
+          <select value={brandId} onChange={(e) => handleBrandChange(e.target.value)} className="input bg-white cursor-pointer">
             <option value="" disabled>Pilih Brand yang ditugaskan ke Anda...</option>
             {myBrands.map((b: any) => (
               <option key={b.id} value={b.id}>{b.name}</option>
