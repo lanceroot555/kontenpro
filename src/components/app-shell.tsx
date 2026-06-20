@@ -6,6 +6,7 @@ import { Bell, LogOut, Menu, X } from "lucide-react";
 import { useAuth, type AppRole } from "@/lib/use-auth";
 import { toast } from "sonner";
 import { GlobalSearch } from "@/components/global-search";
+import { ProductTour } from "@/components/product-tour";
 
 type NavItem = { to: string; label: string; badge?: number };
 
@@ -149,6 +150,7 @@ export function AppShell({
           </Link>
         </header>
         <main className="flex-1 p-6 md:p-10">{children}</main>
+        <ProductTour role={role} />
       </div>
     </div>
   );

@@ -3,7 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/lib/use-auth";
 import { toast } from "sonner";
-import { Camera, Lock, User } from "lucide-react";
+import { Camera, Lock, User, BookOpen } from "lucide-react";
+import { resetTour } from "@/components/product-tour";
 
 const ROLE_LABELS: Record<AppRole, string> = {
   superadmin: "Super Administrator",
@@ -227,6 +228,24 @@ export function AccountSettings() {
             {savingProfile ? "Menyimpan..." : "Simpan Profil"}
           </button>
         </form>
+      </section>
+
+      {/* ── Panduan Aplikasi ── */}
+      <section className="bg-white border border-ink/15 p-8">
+        <div className="flex items-center gap-2 mb-4">
+          <BookOpen className="h-4 w-4" />
+          <h3 className="text-base font-bold uppercase tracking-[0.06em]">Panduan Aplikasi</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Ulangi panduan fitur dari awal — cocok untuk anggota tim baru yang bergabung.
+        </p>
+        <button
+          onClick={() => auth.role && resetTour(auth.role)}
+          className="flex items-center gap-2 border border-ink px-6 py-3 text-[12px] uppercase tracking-[0.06em] font-medium hover:bg-ink hover:text-white"
+        >
+          <BookOpen className="h-4 w-4" />
+          Ulangi Panduan
+        </button>
       </section>
 
       {/* ── Keamanan ── */}
